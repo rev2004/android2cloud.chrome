@@ -1,0 +1,77 @@
+<html>
+  <script type="text/javascript" src="chrome_ex_oauthsimple.js"></script>
+  <script type="text/javascript" src="chrome_ex_oauth.js"></script>
+  <script>
+    var oauth = ChromeExOAuth.initBackgroundPage({
+      'request_url': "https://android2cloud.appspot.com/_ah/OAuthGetRequestToken",
+      'authorize_url': "https://android2cloud.appspot.com/_ah/OAuthAuthorizeToken",
+      'access_url': "https://android2cloud.appspot.com/_ah/OAuthGetAccessToken",
+      'consumer_key': "anonymous",
+      'consumer_secret': "anonymous",
+      'app_name': "android2cloud extension"
+    });
+    // open a link in a new tab. Pass a link as a string.
+    function openLink(link) {
+      chrome.tabs.create({'url': link}, function(tab) { });
+    }
+    
+    // retrieve the latest passed link from the server
+    var getLinkReturn;
+    var xhr;
+    function getLink() {
+      oauth.sendSignedRequest("http://android2cloud.appspot.com/links/get", returnLink, null);
+    }
+    
+    function returnLink(resp, xhr) {
+      open = resp.substr(0, 6);
+      if(open == "<link>"){
+        compareAndOpen(resp.replace("</link>", "").replace("<link>", ""));
+      }
+    }
+
+    function forceGetLink() {
+      oauth.sendSignedRequest("http://android2cloud.appspot.com/links/get", forceReturnLink, null);
+    }
+    
+    function forceReturnLink(resp, xhr) {
+      open = resp.substr(0,6);
+      if(open == "<link>"){
+        resp = resp.replace("</link>", "").replace("<link>", "");
+        localStorage['last_link'] = resp;
+        openLink(resp);
+      }else{
+        if(localStorage['last_link'] != ""){
+          openLink(localStorage['last_link']);
+        }
+      }
+    }
+    
+    // determine if this link has been opened
+    function compareLinks(link) {
+      if (localStorage['last_link'] != link){
+        localStorage['last_link'] = link;
+        return true;
+      }else{
+        //alert("Checked, and link \""+localStorage['last_link']+"\" is old.")
+        return false;
+      }
+    }
+    
+    // combine compare and open functions for the timeout call.
+    function compareAndOpen(link) {
+      if (compareLinks(link)) {
+        openLink(link);
+      }
+    }
+    
+    oauth.authorize(getLink);
+    
+    // check if there's a new link
+    timeout = setInterval("getLink()", 15000);
+
+    // Open the last link, no matter what, when the icon is clicked
+    chrome.browserAction.onClicked.addListener(function(tab) {
+        forceGetLink();
+    });
+  </script>
+</html>
