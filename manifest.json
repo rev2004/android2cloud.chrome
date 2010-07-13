@@ -10,5 +10,8 @@
     "http://android2cloud.appspot.com/",
     "https://android2cloud.appspot.com/"
   ],
-  "background_page": "background.html"
+  "background_page": "background.html",
+  "icons": { "16": "icon.png",
+             "48": "icon48.png",
+            "128": "icon128.png" }
 }
