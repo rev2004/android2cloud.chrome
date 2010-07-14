@@ -26,7 +26,7 @@
       open = resp.substr(0, 6);
       if(open == "<link>"){
 	resp = resp.replace("</link>", "").replace("<link>", "");
-	if(resp.indexOf(":") == -1){
+	if(resp.indexOf("://") == -1){
 		resp = "http://"+resp;
 	}
         compareAndOpen(resp);
@@ -41,7 +41,7 @@
       open = resp.substr(0,6);
       if(open == "<link>"){
         resp = resp.replace("</link>", "").replace("<link>", "");
-	if(resp.indexOf(":") == -1){
+	if(resp.indexOf("://") == -1){
 		resp = "http://"+resp;
 	}
         localStorage['last_link'] = resp;
