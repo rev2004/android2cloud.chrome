@@ -7,8 +7,9 @@
   },
   "permissions": [
   	"tabs",
-    "http://android2cloud.appspot.com/",
-    "https://android2cloud.appspot.com/"
+        "notifications",
+    "http://android2cloud-dev.appspot.com/",
+    "https://android2cloud-dev.appspot.com/"
   ],
   "background_page": "background.html",
   "icons": { "16": "icon.png",

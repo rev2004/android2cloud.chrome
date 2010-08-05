@@ -2,10 +2,13 @@
   <script type="text/javascript" src="chrome_ex_oauthsimple.js"></script>
   <script type="text/javascript" src="chrome_ex_oauth.js"></script>
   <script>
+    var host = "android2cloud-dev.appspot.com"
     var oauth = ChromeExOAuth.initBackgroundPage({
-      'request_url': "https://android2cloud.appspot.com/_ah/OAuthGetRequestToken",
-      'authorize_url': "https://android2cloud.appspot.com/_ah/OAuthAuthorizeToken",
-      'access_url': "https://android2cloud.appspot.com/_ah/OAuthGetAccessToken",
+      'request_url': "https://" + host + "/_ah/OAuthGetRequestToken",
+      'authorize_url': "https://" + host + "/_ah/OAuthAuthorizeToken",
+      'access_url': "https://" + host + "/_ah/OAuthGetAccessToken",
+      //'consumer_key': "android2cloud.appspot.com",
+      //'consumer_secret': "ySS8cOHGuNgNS9qLsxUhQBH/",
       'consumer_key': "anonymous",
       'consumer_secret': "anonymous",
       'app_name': "android2cloud extension"
@@ -19,33 +22,41 @@
     var getLinkReturn;
     var xhr;
     function getLink() {
-      oauth.sendSignedRequest("http://android2cloud.appspot.com/links/get", returnLink, null);
+      oauth.sendSignedRequest("http://" + host + "/links/get", returnLink, null);
     }
     
     function returnLink(resp, xhr) {
-      open = resp.substr(0, 6);
-      if(open == "<link>"){
-	resp = resp.replace("</link>", "").replace("<link>", "");
-	if(resp.indexOf("://") == -1){
-		resp = "http://"+resp;
+      var link_regex = new RegExp("<link>([^<]*)(?=<\/link>)");
+      var source_regex = new RegExp("<source>([^<]*)(?=<\/source>)");
+      if(resp.match(link_regex)){
+        var link_matches = link_regex.exec(resp);
+        var link = link_matches[1];
+	if(link.indexOf("://") == -1){
+		link = "http://"+link;
 	}
-        compareAndOpen(resp);
+	if(resp.match(source_regex)){
+                var source_matches = source_regex.exec(resp);
+		var link_source = source_matches[1];
+                //notify(link_source);
+	}
+        compareAndOpen(link);
       }
     }
 
     function forceGetLink() {
-      oauth.sendSignedRequest("http://android2cloud.appspot.com/links/get", forceReturnLink, null);
+      oauth.sendSignedRequest("http://" + host + "/links/get", forceReturnLink, null);
     }
     
     function forceReturnLink(resp, xhr) {
-      open = resp.substr(0,6);
-      if(open == "<link>"){
-        resp = resp.replace("</link>", "").replace("<link>", "");
-	if(resp.indexOf("://") == -1){
-		resp = "http://"+resp;
+      var regex = new RegExp("<link>([^<]*)(?=<\/link>)");
+      if(resp.match(regex)){
+        matches = regex.exec(resp);
+        var link = matches[1];
+	if(link.indexOf("://") == -1){
+		link = "http://"+link;
 	}
-        localStorage['last_link'] = resp;
-        openLink(resp);
+        localStorage['last_link'] = link;
+        openLink(link);
       }else{
         if(localStorage['last_link'] != ""){
           openLink(localStorage['last_link']);
@@ -80,5 +91,15 @@
     chrome.browserAction.onClicked.addListener(function(tab) {
         forceGetLink();
     });
+
+    function notify(message) {
+        if (window.webkitNotifications.checkPermission() == 0) {
+            // note the show()
+            window.webkitNotifications.createNotification('', 'android2cloud error', message).show(); 
+            localStorage["oauth_notify"] = true;
+        } else {
+            alert(message);
+        }
+    }
   </script>
 </html>
