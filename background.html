@@ -9,7 +9,7 @@
       'access_url': "https://" + host + "/_ah/OAuthGetAccessToken",
       'consumer_key': "android2cloud.appspot.com",
       'consumer_secret': "ySS8cOHGuNgNS9qLsxUhQBH/",
-      'app_name': "android2cloud extension"
+      'scope': ""
     });
     // open a link in a new tab. Pass a link as a string.
     function openLink(link) {
@@ -27,6 +27,7 @@
       var link_regex = new RegExp("<link>([^<]*)(?=<\/link>)");
       var source_regex = new RegExp("<source>([^<]*)(?=<\/source>)");
       var age_regex = new RegExp("<age>([^<]*)(?=<\/age>)");
+      var error_regex = new RegExp("<error>([^<]*)(?=<\/error>)");
       if(resp.match(link_regex)){
         var link_matches = link_regex.exec(resp);
         var link = link_matches[1];
@@ -44,6 +45,11 @@
 		//notify("Link is "+age+" days old.");
 	}
         compareAndOpen(link);
+      }else if(resp.match(error_regex)){
+        var error_matches = error_regex.exec(resp);
+        var error = error_matches[1];
+        notify(error + " The extension will now attempt to re-authenticate you.");
+        reauth();
       }
     }
 
@@ -94,6 +100,7 @@
     // Open the last link, no matter what, when the icon is clicked
     chrome.browserAction.onClicked.addListener(function(tab) {
         forceGetLink();
+        //reauth();
     });
 
     function notify(message) {
@@ -104,6 +111,11 @@
         } else {
             alert(message);
         }
+    }
+
+    function reauth() {
+        oauth.clearTokens();
+        oauth.authorize(getLink);
     }
   </script>
 </html>
