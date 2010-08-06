@@ -2,7 +2,7 @@
   <script type="text/javascript" src="chrome_ex_oauthsimple.js"></script>
   <script type="text/javascript" src="chrome_ex_oauth.js"></script>
   <script>
-    var host = "android2cloud-dev.appspot.com"
+    var host = "android2cloud.appspot.com"
     var oauth = ChromeExOAuth.initBackgroundPage({
       'request_url': "https://" + host + "/_ah/OAuthGetRequestToken",
       'authorize_url': "https://" + host + "/_ah/OAuthAuthorizeToken",
@@ -28,6 +28,7 @@
     function returnLink(resp, xhr) {
       var link_regex = new RegExp("<link>([^<]*)(?=<\/link>)");
       var source_regex = new RegExp("<source>([^<]*)(?=<\/source>)");
+      var age_regex = new RegExp("<age>([^<]*)(?=<\/age>)");
       if(resp.match(link_regex)){
         var link_matches = link_regex.exec(resp);
         var link = link_matches[1];
@@ -38,6 +39,11 @@
                 var source_matches = source_regex.exec(resp);
 		var link_source = source_matches[1];
                 //notify(link_source);
+	}
+        if(resp.match(age_regex)){
+		var age_matches = age_regex.exec(resp);
+		var age = age_matches[1];
+		//notify("Link is "+age+" days old.");
 	}
         compareAndOpen(link);
       }
